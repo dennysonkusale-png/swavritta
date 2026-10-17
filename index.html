@@ -217,7 +217,7 @@ fieldset{border:0;padding:0;margin:0 0 18px}
 #doc[data-halign="left"] .doc-head .id{flex:1;text-align:left}
 #doc[data-halign="center"] .doc-head{justify-content:center}
 #doc[data-halign="center"] .doc-head .id{flex:0 1 auto;text-align:center}
-#doc[data-halign="right"] .doc-head{justify-content:flex-end}
+#doc[data-halign="right"] .doc-head{flex-direction:row-reverse;justify-content:flex-start}
 #doc[data-halign="right"] .doc-head .id{flex:0 1 auto;text-align:right}
 .doc-banner{position:absolute;top:0;left:0;right:0;height:var(--banner-pad,44px);display:flex;justify-content:space-between;align-items:flex-end;padding:0 8px 5px;pointer-events:none;z-index:1;color:var(--d-head-ink,#fff8ec);opacity:.92;overflow:hidden}
 .doc-banner > svg,.doc-banner .bc{display:block;flex:0 0 auto}
@@ -390,7 +390,7 @@ body.readonly .preview-pane{position:static;max-height:none}
   .doc-head{flex-direction:column}
   #doc[data-halign="left"] .doc-head{align-items:flex-start;text-align:left}
   #doc[data-halign="center"] .doc-head{align-items:center;text-align:center}
-  #doc[data-halign="right"] .doc-head{align-items:flex-end;text-align:right}
+  #doc[data-halign="right"] .doc-head{flex-direction:column;align-items:flex-end;text-align:right}
   #doc[data-halign] .doc-head .id{flex:0 1 auto}
   .grid-d{grid-template-columns:1fr}
   .item .k{min-width:96px}
