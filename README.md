@@ -40,6 +40,9 @@ in the app's own content, sample data or interface text.
   coloured banner of the portfolio: **floral lines** (the default), toran garland, leaf vine,
   lace edge, paisley, marigold, pearls, or none at all. Every one is drawn in the template's own
   header ink, so it always matches, and each has a live preview in the picker.
+- **Banner alignment — left, centre or right.** Place the photo and name block wherever it sits
+  best on the coloured banner. On narrow screens the header stacks into a column, and your
+  chosen alignment still holds.
 - **Optional floral page border.** Switch on a floral line frame — a double rule with rosettes
   at the corners and leaf sprigs at the top and bottom edges — drawn in the template's accent
   colour around the whole page. Off by default.
@@ -89,9 +92,9 @@ internet connection.
   To send directly from the app instead, define `window.sendMailViaService({to, subject,
   message})` in the code and set `MAIL_SERVICE.enabled = true`. Doing so would route mail
   through whichever service you choose.
-- The banner decoration, floral page border and floral motifs all appear in the on-screen
-  preview and in the PDF, PNG and JPG exports. The DOCX and PPTX files carry the text and
-  structure, not the ornamental artwork.
+- The banner decoration, banner alignment, floral page border and floral motifs all appear in
+  the on-screen preview and in the PDF, PNG and JPG exports. The DOCX and PPTX files carry the
+  text and structure, not the ornamental artwork.
 - The Guna Milan calculator uses commonly published Ashtakoot tables and is indicative only.
   Please confirm with a qualified astrologer before making any decision.
 
