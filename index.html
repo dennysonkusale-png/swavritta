@@ -212,6 +212,13 @@ fieldset{border:0;padding:0;margin:0 0 18px}
 /* ---- banner decoration: toran garland, pendant and sprays ---- */
 .doc-head > .photo,.doc-head > .id{position:relative;z-index:2}
 .doc-head.has-banner{padding-top:var(--banner-pad,44px)}
+/* ---- banner content alignment: chosen by the user ---- */
+#doc[data-halign="left"] .doc-head{justify-content:flex-start}
+#doc[data-halign="left"] .doc-head .id{flex:1;text-align:left}
+#doc[data-halign="center"] .doc-head{justify-content:center}
+#doc[data-halign="center"] .doc-head .id{flex:0 1 auto;text-align:center}
+#doc[data-halign="right"] .doc-head{justify-content:flex-end}
+#doc[data-halign="right"] .doc-head .id{flex:0 1 auto;text-align:right}
 .doc-banner{position:absolute;top:0;left:0;right:0;height:var(--banner-pad,44px);display:flex;justify-content:space-between;align-items:flex-end;padding:0 8px 5px;pointer-events:none;z-index:1;color:var(--d-head-ink,#fff8ec);opacity:.92;overflow:hidden}
 .doc-banner > svg,.doc-banner .bc{display:block;flex:0 0 auto}
 .doc-banner .bc.flip{transform:scaleX(-1)}
@@ -380,7 +387,11 @@ body.readonly .preview-pane{position:static;max-height:none}
 }
 @media (max-width:520px){
   .grid2,.grid3{grid-template-columns:1fr}
-  .doc-head{flex-direction:column;text-align:center}
+  .doc-head{flex-direction:column}
+  #doc[data-halign="left"] .doc-head{align-items:flex-start;text-align:left}
+  #doc[data-halign="center"] .doc-head{align-items:center;text-align:center}
+  #doc[data-halign="right"] .doc-head{align-items:flex-end;text-align:right}
+  #doc[data-halign] .doc-head .id{flex:0 1 auto}
   .grid-d{grid-template-columns:1fr}
   .item .k{min-width:96px}
   .brand small{display:none}
@@ -506,6 +517,10 @@ body.readonly .preview-pane{position:static;max-height:none}
         <div class="grp">
           <b id="bannerLbl">Banner decoration</b>
           <div class="motif-row" id="bannerRow"></div>
+        </div>
+        <div class="grp">
+          <b id="headAlignLbl">Banner alignment</b>
+          <div class="motif-row" id="alignRow"></div>
         </div>
         <div class="grp">
           <b id="pageBorderLbl">Page border</b>
@@ -1435,6 +1450,17 @@ const BANNER_UNITS = {
     preview:{vb:"0 0 110 16", body:`<circle cx="16" cy="8" r="4.6" opacity=".55"/><circle cx="16" cy="8" r="2.2" fill="currentColor" stroke="none" opacity=".8"/><circle cx="40" cy="8" r="4.6" opacity=".55"/><circle cx="40" cy="8" r="2.2" fill="currentColor" stroke="none" opacity=".8"/><circle cx="64" cy="8" r="4.6" opacity=".55"/><circle cx="64" cy="8" r="2.2" fill="currentColor" stroke="none" opacity=".8"/><circle cx="88" cy="8" r="4.6" opacity=".55"/><circle cx="88" cy="8" r="2.2" fill="currentColor" stroke="none" opacity=".8"/>`} },
   none:{ pad:0 }
 };
+/* ---- banner content alignment: left / center / right ---- */
+const ALIGN_IDS = ["left","center","right"];
+function alignPreview(id){
+  const bars=[[70,5],[46,9],[56,13]];
+  const segs=bars.map(function(b){
+    const w=b[0], y=b[1];
+    let x1 = id==="left" ? 6 : (id==="right" ? 104-w : 55-w/2);
+    return `<line x1="${x1}" y1="${y}" x2="${x1+w}" y2="${y}" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" opacity=".55"/>`;
+  }).join("");
+  return `<svg viewBox="0 0 110 16" width="110" height="16">${segs}</svg>`;
+}
 function svgPart(p,w,h){
   if(!p) return "";
   return `<svg viewBox="${p.vb}" width="${w}" height="${h}" fill="none" stroke="currentColor" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round">${p.body}</svg>`;
@@ -1567,7 +1593,7 @@ const STEPS = [
    ============================================================ */
 const LS_KEY = "swavritta.v1";
 const DEFAULT_STATE = {
-  lang:"en", docLang:"en", template:"patta", motif:"vine", accent:"", font:"serif", invocation:true, banner:"floralline", pageBorder:false,
+  lang:"en", docLang:"en", template:"patta", motif:"vine", accent:"", font:"serif", invocation:true, banner:"floralline", pageBorder:false, headAlign:"left",
   data:{}, photos:[], step:0,
   showIncome:true, showContact:true, showHoroscope:true,
 };
@@ -1891,6 +1917,7 @@ function renderDoc(){
   doc.dataset.banner=_bn;
   doc.style.setProperty("--banner-pad",((BANNER_UNITS[_bn]||BANNER_UNITS.none).pad||0)+"px");
   doc.classList.toggle("has-frame",!!state.pageBorder);
+  doc.dataset.halign=(ALIGN_IDS.indexOf(state.headAlign)>=0?state.headAlign:"left");
   if(state.accent) doc.style.setProperty("--d-accent",state.accent); else doc.style.removeProperty("--d-accent");
   const fontMap={serif:"'Cormorant Garamond',serif",devanagari:"'Noto Serif Devanagari',serif",sans:"'Inter','Mukta',sans-serif"};
   doc.style.setProperty("--d-headfont",fontMap[state.font]||fontMap.serif);
@@ -2163,6 +2190,7 @@ function renderTemplates(){
   $("#bannerLbl").textContent=tL(L,"banner");
   $("#pageBorderLbl").textContent=tL(L,"pageBorder");
   $("#pageBorderTxt").textContent=tL(L,"floralBorder");
+  $("#headAlignLbl").textContent=tL(L,"headAlign");
   // floral / embroidery motif picker
   const mrow=$("#motifRow"); mrow.innerHTML="";
   MOTIF_IDS.forEach(id=>{
@@ -2184,6 +2212,15 @@ function renderTemplates(){
     b.innerHTML=prev+`<span>${esc(tL(L,"banner_"+id))}</span>`;
     b.onclick=()=>{ state.banner=id; saveState(); renderTemplates(); renderDoc(); };
     brow.appendChild(b);
+  });
+  // banner content alignment picker
+  const arow=$("#alignRow"); arow.innerHTML="";
+  ALIGN_IDS.forEach(id=>{
+    const b=document.createElement("button");
+    b.className="motif-btn"+(state.headAlign===id?" on":"");
+    b.innerHTML=alignPreview(id)+`<span>${esc(tL(L,"align_"+id))}</span>`;
+    b.onclick=()=>{ state.headAlign=id; saveState(); renderTemplates(); renderDoc(); };
+    arow.appendChild(b);
   });
 }
 
@@ -2325,6 +2362,7 @@ Object.assign(I18N.en, {
   banner_vine:"Leaf vine", banner_lace:"Lace edge", banner_paisley:"Paisley",
   banner_marigold:"Marigold", banner_pearl:"Pearls", banner_none:"None",
   pageBorder:"Page border", floralBorder:"Floral border",
+  headAlign:"Banner alignment", align_left:"Left", align_center:"Center", align_right:"Right",
   privacyNote:"Your details stay on this device — nothing is uploaded to any server."
 });
 Object.assign(I18N.hi, {
@@ -2358,6 +2396,7 @@ Object.assign(I18N.hi, {
   banner_vine:"पत्ती लता", banner_lace:"लेस किनारा", banner_paisley:"कैरी बूटी",
   banner_marigold:"गेंदा", banner_pearl:"मोती", banner_none:"कोई नहीं",
   pageBorder:"पृष्ठ सीमा", floralBorder:"पुष्प सीमा",
+  headAlign:"बैनर संरेखण", align_left:"बायाँ", align_center:"मध्य", align_right:"दायाँ",
   privacyNote:"आपकी जानकारी इसी डिवाइस पर रहती है — किसी सर्वर पर अपलोड नहीं होती।"
 });
 Object.assign(I18N.mr, {
@@ -2391,6 +2430,7 @@ Object.assign(I18N.mr, {
   banner_vine:"पानांची वेल", banner_lace:"लेस कडा", banner_paisley:"कैरी",
   banner_marigold:"झेंडू", banner_pearl:"मोती", banner_none:"काही नाही",
   pageBorder:"पृष्ठ किनारा", floralBorder:"पुष्प किनारा",
+  headAlign:"बॅनर संरेखन", align_left:"डावा", align_center:"मध्य", align_right:"उजवा",
   privacyNote:"तुमची माहिती याच डिव्हाइसवर राहते — कोणत्याही सर्व्हरवर अपलोड होत नाही."
 });
 Object.assign(I18N.sa, {
@@ -2424,6 +2464,7 @@ Object.assign(I18N.sa, {
   banner_vine:"पर्णलता", banner_lace:"जालकिनारा", banner_paisley:"आम्राकृतिः",
   banner_marigold:"स्थलकमलम्", banner_pearl:"मुक्ताः", banner_none:"न किमपि",
   pageBorder:"पृष्ठसीमा", floralBorder:"पुष्पसीमा",
+  headAlign:"पट्टसंरेखनम्", align_left:"वामतः", align_center:"मध्यतः", align_right:"दक्षिणतः",
   privacyNote:"भवतः विवरणम् अस्मिन् एव यन्त्रे तिष्ठति — कस्मिंश्चित् अपि सर्वरे न प्रेष्यते।"
 });
 
@@ -2496,6 +2537,7 @@ function applyExtraLabels(){
   set("navResetTxt","resetShort"); set("btnResetPreviewTxt","resetShort");
   set("btnSampleTxt","sample"); set("privacyLineTxt","privacyNote");
   set("bannerLbl","banner"); set("pageBorderLbl","pageBorder"); set("pageBorderTxt","floralBorder");
+  set("headAlignLbl","headAlign");
   updateSampleUI();
 }
 
@@ -2533,7 +2575,7 @@ function renderGunaResult(r){
 
 /* ---- save / load JSON ---- */
 function saveJsonFile(){
-  const payload={v:1,app:"swavritta",state:{data:state.data,photos:state.photos,lang:state.lang,docLang:state.docLang,template:state.template,motif:state.motif,accent:state.accent,font:state.font,invocation:state.invocation,banner:state.banner,pageBorder:state.pageBorder,showIncome:state.showIncome,showContact:state.showContact,showHoroscope:state.showHoroscope}};
+  const payload={v:1,app:"swavritta",state:{data:state.data,photos:state.photos,lang:state.lang,docLang:state.docLang,template:state.template,motif:state.motif,accent:state.accent,font:state.font,invocation:state.invocation,banner:state.banner,pageBorder:state.pageBorder,headAlign:state.headAlign,showIncome:state.showIncome,showContact:state.showContact,showHoroscope:state.showHoroscope}};
   saveBlob(new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}), safeName()+"_Swavritta_data.json");
   toast(tL(state.lang,"toastDownloaded"));
 }
@@ -2548,6 +2590,7 @@ function loadJsonFile(file){
       state.invocation=s.invocation!==false;
       state.banner=(s.banner&&BANNER_UNITS[s.banner])?s.banner:(s.toran===false?"none":"floralline");
       state.pageBorder=!!s.pageBorder;
+      state.headAlign=(ALIGN_IDS.indexOf(s.headAlign)>=0?s.headAlign:"left");
       state.showIncome=s.showIncome!==false; state.showContact=s.showContact!==false; state.showHoroscope=s.showHoroscope!==false;
       state.step=0; saveState();
       document.getElementById("langSelect").value=state.lang;
@@ -2561,7 +2604,7 @@ function loadJsonFile(file){
 
 /* ---- shareable read-only link ---- */
 function buildShareLink(){
-  const payload={d:state.data,s:{i:state.showIncome,c:state.showContact,h:state.showHoroscope},t:state.template,a:state.accent,f:state.font,v:state.invocation?1:0,l:state.docLang,n:state.data.name||"",m:state.motif,bn:state.banner,pb:state.pageBorder?1:0};
+  const payload={d:state.data,s:{i:state.showIncome,c:state.showContact,h:state.showHoroscope},t:state.template,a:state.accent,f:state.font,v:state.invocation?1:0,l:state.docLang,n:state.data.name||"",m:state.motif,bn:state.banner,pb:state.pageBorder?1:0,ha:state.headAlign};
   if(document.getElementById("sharePhotos").checked) payload.ph=state.photos;
   const json=JSON.stringify(payload);
   const base=location.href.split("#")[0];
@@ -2616,6 +2659,7 @@ function tryLoadFromHash(){
   state.invocation=!!p.v;
   state.banner=(p.bn&&BANNER_UNITS[p.bn])?p.bn:(p.g===false?"none":"floralline");
   state.pageBorder=!!p.pb;
+  state.headAlign=(ALIGN_IDS.indexOf(p.ha)>=0?p.ha:"left");
   state.docLang=p.l||"en"; state.lang=state.docLang;
   document.body.classList.remove("view-edit","view-preview");
   document.body.classList.add("readonly");
@@ -2628,7 +2672,7 @@ function tryLoadFromHash(){
 function resetAll(){
   const L=state.lang;
   if(!confirm(tL(L,"resetConfirm"))) return;
-  const keep={lang:state.lang, docLang:state.docLang, template:state.template, motif:state.motif, accent:state.accent, font:state.font, invocation:state.invocation, banner:state.banner, pageBorder:state.pageBorder};
+  const keep={lang:state.lang, docLang:state.docLang, template:state.template, motif:state.motif, accent:state.accent, font:state.font, invocation:state.invocation, banner:state.banner, pageBorder:state.pageBorder, headAlign:state.headAlign};
   try{ localStorage.removeItem(LS_KEY); }catch(e){}
   state=structuredClone(DEFAULT_STATE);
   Object.assign(state, keep);
